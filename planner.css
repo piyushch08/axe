@@ -673,6 +673,29 @@ body {
     box-shadow: 0 0 5px var(--accent-glow);
 }
 
+.event-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--sidebar-bg);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--glass-border);
+    margin-bottom: 5px;
+}
+.cal-cell:hover .event-tooltip {
+    opacity: 1;
+}
+
 /* Diet */
 .macro-bar {
     margin-top: 1rem;
@@ -710,7 +733,24 @@ body {
     bottom: 0;
     width: 100%;
     background: rgba(79, 172, 254, 0.5);
-    transition: height 0.3s ease;
+    transition: height 0.5s ease;
+}
+
+.water-level::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 200%;
+    height: 20px;
+    background: inherit;
+    border-radius: 40%;
+    animation: wave 2s linear infinite;
+}
+
+@keyframes wave {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .water-controls {
@@ -727,6 +767,12 @@ body {
     padding: 1rem;
     border-radius: 12px;
     margin-top: 1rem;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.meal-card:hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .meal-card.empty {
@@ -753,7 +799,16 @@ body {
     align-items: center;
     padding: 0.8rem 0;
     border-bottom: 1px solid var(--glass-border);
-    transition: opacity 0.3s ease;
+    transition: transform 0.2s, background 0.2s, opacity 0.3s ease;
+}
+
+.ex-item:not(.completed):hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-bottom: transparent;
 }
 
 .ex-item.completed {

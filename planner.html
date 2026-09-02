@@ -93,6 +93,7 @@
                         <div>
                             <h1 class="greeting" id="greeting-text">Good Morning, Explorer.</h1>
                             <p class="date-display" id="current-date">Today is...</p>
+                            <p class="clock-display" id="real-time-clock" style="font-size: 1.5rem; font-weight: 300; color: var(--accent); margin-top: 5px;">00:00</p>
                         </div>
                         <div class="mood-tracker glass-widget" style="padding: 0.5rem 1rem; text-align: center; border-radius: 20px;">
                             <span style="font-size: 0.8rem; color: var(--text-secondary);">How are you feeling?</span>
@@ -175,8 +176,12 @@
                                 <input type="number" id="pomodoro-input" class="glass-input" value="25" min="1" style="width: 80px; text-align: center; margin: 0; padding: 0.5rem;">
                                 <button class="glass-btn small-btn" id="set-timer-btn" style="padding: 0.5rem 1rem;">Set</button>
                             </div>
-                            <div class="timer-display">
-                                <span id="time-left">25:00</span>
+                            <div class="timer-display" style="position: relative; width: 200px; height: 200px; margin: 1.5rem auto;">
+                                <svg viewBox="0 0 36 36" class="circular-chart focus-chart" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" style="fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 2;" />
+                                    <path class="circle" id="focus-ring-path" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" style="fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; transition: stroke-dasharray 1s linear;" />
+                                </svg>
+                                <span id="time-left" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; margin: 0; text-shadow: none;">25:00</span>
                             </div>
                             <div class="timer-controls">
                                 <button class="glass-btn primary" id="timer-play"><i class="ri-play-fill"></i></button>
@@ -424,6 +429,24 @@
                     <button class="glass-btn" id="import-data-btn" style="flex: 1;"><i class="ri-upload-line"></i> Restore Data</button>
                     <input type="file" id="import-data-input" accept=".json" style="display: none;">
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Event Modal -->
+    <div id="event-modal" class="modal-overlay" style="display: none;">
+        <div class="glass-widget modal-content" style="max-width: 400px; text-align: center;">
+            <header class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 id="event-modal-title"><i class="ri-calendar-event-line"></i> Event details</h2>
+                <button class="glass-btn icon-only" id="close-event-modal-btn"><i class="ri-close-line"></i></button>
+            </header>
+            <div id="existing-event-details" style="display: none; margin-bottom: 1rem; text-align: left;">
+                <h3 id="existing-event-name" style="color: var(--accent);"></h3>
+                <button class="glass-btn small-btn mt-4" id="delete-event-btn" style="color: #fe4f70; border-color: #fe4f70;"><i class="ri-delete-bin-line"></i> Delete Event</button>
+            </div>
+            <div id="add-event-form">
+                <input type="text" id="event-name-input" class="glass-input" placeholder="Event Name (e.g. Math Exam)" required>
+                <button class="glass-btn primary w-full" id="save-event-btn">Save Event</button>
             </div>
         </div>
     </div>

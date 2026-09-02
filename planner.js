@@ -207,12 +207,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 1. Date Display ---
+    // --- 1. Date Display & Clock ---
     const dateDisplay = document.getElementById('current-date');
     if (dateDisplay) {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const today = new Date();
         dateDisplay.textContent = today.toLocaleDateString('en-US', options);
+    }
+
+    const clockDisplay = document.getElementById('real-time-clock');
+    if (clockDisplay) {
+        setInterval(() => {
+            const now = new Date();
+            clockDisplay.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }, 1000);
+        clockDisplay.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
     // --- 2. Theme Switching & Customization Hooks ---
@@ -377,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (playBtn && timeLeft) {
+        const focusRingPath = document.getElementById('focus-ring-path');
         playBtn.addEventListener('click', () => {
             if (!isRunning) {
                 isRunning = true;
@@ -385,12 +395,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 timerInterval = setInterval(() => {
                     time--;
                     timeLeft.textContent = formatTime(time);
+                    if (focusRingPath) {
+                        const percentage = (time / defaultTime) * 100;
+                        focusRingPath.setAttribute('stroke-dasharray', `${percentage}, 100`);
+                    }
                     if(time <= 0) {
                         clearInterval(timerInterval);
                         isRunning = false;
                         playBtn.innerHTML = '<i class="ri-play-fill"></i>';
                         time = defaultTime;
                         timeLeft.textContent = formatTime(time);
+                        if (focusRingPath) focusRingPath.setAttribute('stroke-dasharray', `100, 100`);
                         showToast("Focus session completed!");
                         sendNotification("Focus Session Complete!", "Great job! Time for a short break.");
                     }
@@ -411,6 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 playBtn.innerHTML = '<i class="ri-play-fill"></i>';
                 time = defaultTime;
                 timeLeft.textContent = formatTime(time);
+                const focusRingPath = document.getElementById('focus-ring-path');
+                if (focusRingPath) focusRingPath.setAttribute('stroke-dasharray', `100, 100`);
             });
         }
 
@@ -421,6 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 playBtn.innerHTML = '<i class="ri-play-fill"></i>';
                 time = 5 * 60; // 5 min break
                 timeLeft.textContent = formatTime(time);
+                const focusRingPath = document.getElementById('focus-ring-path');
+                if (focusRingPath) focusRingPath.setAttribute('stroke-dasharray', `100, 100`);
                 showToast("Skipped to Break");
             });
         }
@@ -576,23 +595,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const dot = document.createElement('div');
                     dot.className = 'event-dot';
                     cell.appendChild(dot);
+                    
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'event-tooltip';
+                    tooltip.textContent = typeof STATE.events[dateKey] === 'object' ? STATE.events[dateKey].name : 'Event';
+                    cell.appendChild(tooltip);
                 }
 
                 cell.addEventListener('click', () => {
-                    if (STATE.events[dateKey]) {
-                        delete STATE.events[dateKey];
-                        cell.classList.remove('has-event');
-                        const dot = cell.querySelector('.event-dot');
-                        if(dot) dot.remove();
-                    } else {
-                        STATE.events[dateKey] = true;
-                        cell.classList.add('has-event');
-                        const dot = document.createElement('div');
-                        dot.className = 'event-dot';
-                        cell.appendChild(dot);
-                        showToast(`Event added on ${monthNames[month]} ${i}`);
-                    }
-                    saveState();
+                    openEventModal(dateKey, cell, monthNames[month], i);
                 });
 
                 calGrid.appendChild(cell);
@@ -601,6 +612,94 @@ document.addEventListener('DOMContentLoaded', () => {
             calMonthYear.textContent = `Week of ${monthNames[month]} ${year}`;
             calGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px;">Week view is active. Toggle back to Month view to see all days.</div>';
         }
+    }
+
+    // --- Calendar Event Modal Logic ---
+    const eventModal = document.getElementById('event-modal');
+    const closeEventModalBtn = document.getElementById('close-event-modal-btn');
+    const eventModalTitle = document.getElementById('event-modal-title');
+    const existingEventDetails = document.getElementById('existing-event-details');
+    const existingEventName = document.getElementById('existing-event-name');
+    const deleteEventBtn = document.getElementById('delete-event-btn');
+    const addEventForm = document.getElementById('add-event-form');
+    const eventNameInput = document.getElementById('event-name-input');
+    const saveEventBtn = document.getElementById('save-event-btn');
+
+    let currentSelectedDateKey = null;
+    let currentSelectedCell = null;
+
+    function openEventModal(dateKey, cell, monthName, day) {
+        currentSelectedDateKey = dateKey;
+        currentSelectedCell = cell;
+        
+        eventModalTitle.innerHTML = `<i class="ri-calendar-event-line"></i> ${monthName} ${day}`;
+        
+        if (STATE.events[dateKey]) {
+            existingEventDetails.style.display = 'block';
+            addEventForm.style.display = 'none';
+            existingEventName.textContent = typeof STATE.events[dateKey] === 'object' ? STATE.events[dateKey].name : 'Event';
+        } else {
+            existingEventDetails.style.display = 'none';
+            addEventForm.style.display = 'block';
+            eventNameInput.value = '';
+        }
+        
+        eventModal.style.display = 'flex';
+        eventNameInput.focus();
+    }
+
+    if (closeEventModalBtn && eventModal) {
+        closeEventModalBtn.addEventListener('click', () => {
+            eventModal.style.display = 'none';
+        });
+        eventModal.addEventListener('click', (e) => {
+            if(e.target === eventModal) eventModal.style.display = 'none';
+        });
+    }
+
+    if (saveEventBtn) {
+        saveEventBtn.addEventListener('click', () => {
+            const name = eventNameInput.value.trim();
+            if (name && currentSelectedDateKey) {
+                STATE.events[currentSelectedDateKey] = { name };
+                saveState();
+                
+                currentSelectedCell.classList.add('has-event');
+                if(!currentSelectedCell.querySelector('.event-dot')) {
+                    const dot = document.createElement('div');
+                    dot.className = 'event-dot';
+                    currentSelectedCell.appendChild(dot);
+                }
+                let tooltip = currentSelectedCell.querySelector('.event-tooltip');
+                if(!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'event-tooltip';
+                    currentSelectedCell.appendChild(tooltip);
+                }
+                tooltip.textContent = name;
+                
+                showToast("Event saved!");
+                eventModal.style.display = 'none';
+            }
+        });
+    }
+
+    if (deleteEventBtn) {
+        deleteEventBtn.addEventListener('click', () => {
+            if (currentSelectedDateKey) {
+                delete STATE.events[currentSelectedDateKey];
+                saveState();
+                
+                currentSelectedCell.classList.remove('has-event');
+                const dot = currentSelectedCell.querySelector('.event-dot');
+                if (dot) dot.remove();
+                const tooltip = currentSelectedCell.querySelector('.event-tooltip');
+                if (tooltip) tooltip.remove();
+                
+                showToast("Event deleted!");
+                eventModal.style.display = 'none';
+            }
+        });
     }
 
     if (calPrevBtn && calNextBtn) {
@@ -869,9 +968,23 @@ document.addEventListener('DOMContentLoaded', () => {
         STATE.customTasks.forEach((task, idx) => {
             const taskItem = document.createElement('li');
             taskItem.className = `task-item custom-task ${task.completed ? 'completed' : ''}`;
+            taskItem.draggable = true;
+            taskItem.setAttribute('data-idx', idx);
             taskItem.style.display = 'flex';
             taskItem.style.flexDirection = 'column';
             taskItem.style.gap = '10px';
+            taskItem.style.cursor = 'grab';
+            
+            // Drag and drop event listeners for tasks
+            taskItem.addEventListener('dragstart', (e) => {
+                taskItem.classList.add('dragging');
+                taskItem.style.opacity = '0.5';
+                e.dataTransfer.setData('text/plain', idx);
+            });
+            taskItem.addEventListener('dragend', () => {
+                taskItem.classList.remove('dragging');
+                taskItem.style.opacity = '1';
+            });
             
             let timerHtml = '';
             if (task.duration > 0 && !task.completed) {
@@ -897,6 +1010,53 @@ document.addEventListener('DOMContentLoaded', () => {
             
             todoList.appendChild(taskItem);
         });
+    }
+
+    if (todoList) {
+        todoList.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getTaskDragAfterElement(todoList, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            if (draggable) {
+                if (afterElement == null) {
+                    todoList.appendChild(draggable);
+                } else {
+                    todoList.insertBefore(draggable, afterElement);
+                }
+            }
+        });
+
+        todoList.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const draggedIdx = e.dataTransfer.getData('text/plain');
+            if (draggedIdx === '') return;
+            
+            // Re-order STATE array based on DOM order
+            const newOrder = [];
+            const items = todoList.querySelectorAll('.custom-task');
+            items.forEach(item => {
+                const idx = parseInt(item.getAttribute('data-idx'), 10);
+                newOrder.push(STATE.customTasks[idx]);
+            });
+            
+            STATE.customTasks = newOrder;
+            saveState();
+            renderTodos();
+            showToast("Tasks reordered");
+        });
+    }
+
+    function getTaskDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.custom-task:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
     if (todoForm && todoList) {
