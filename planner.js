@@ -1,6 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- Global Utility ---
+    const alarmAudio = document.getElementById('alarm-audio');
+    const alarmModal = document.getElementById('alarm-trigger-modal');
+    const alarmTitle = document.getElementById('alarm-trigger-title');
+    const dismissAlarmBtn = document.getElementById('dismiss-alarm-btn');
+    
+    function playAlarm(title = "Alarm!") {
+        if (alarmAudio) {
+            alarmAudio.currentTime = 0;
+            alarmAudio.play().catch(e => console.log('Audio play failed', e));
+        }
+        if (alarmModal && alarmTitle) {
+            alarmTitle.textContent = title;
+            alarmModal.style.display = 'flex';
+        }
+    }
+
+    if (dismissAlarmBtn) {
+        dismissAlarmBtn.addEventListener('click', () => {
+            if (alarmAudio) {
+                alarmAudio.pause();
+                alarmAudio.currentTime = 0;
+            }
+            alarmModal.style.display = 'none';
+        });
+    }
+
     function showToast(message) {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -88,10 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
         Storage.set('exercises', STATE.exercises);
         Storage.set('streak', STATE.streak);
         Storage.set('deadlines', STATE.deadlines);
+        Storage.set('alarms', STATE.alarms);
         
         Storage.set('customColor', STATE.customColor);
         Storage.set('customBg', STATE.customBg);
-        Storage.set('hiddenWidgets', STATE.hiddenWidgets);
+        Storage.set('activeWidgets', STATE.activeWidgets);
         Storage.set('mood', STATE.mood);
         Storage.set('scratchpadText', STATE.scratchpadText);
         
@@ -219,7 +246,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clockDisplay) {
         setInterval(() => {
             const now = new Date();
-            clockDisplay.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            clockDisplay.textContent = timeString;
+            
+            // Check alarms (only once per minute to avoid multiple triggers, we track 'lastTriggered' in STATE or just check seconds)
+            if (now.getSeconds() === 0) {
+                const currentHm = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                STATE.alarms.forEach(alarm => {
+                    if (alarm.active && alarm.time === currentHm) {
+                        playAlarm(alarm.label || "Alarm!");
+                        sendNotification("Alarm!", alarm.label);
+                        // Optionally disable alarm after it rings
+                        // alarm.active = false; 
+                    }
+                });
+            }
         }, 1000);
         clockDisplay.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
@@ -385,6 +426,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const presetBtns = document.querySelectorAll('.preset-btn');
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!isRunning) {
+                pomodoroInput.value = btn.getAttribute('data-time');
+                setTimerBtn.click();
+            } else {
+                showToast("Cannot change time while running");
+            }
+        });
+    });
+
     if (playBtn && timeLeft) {
         const focusRingPath = document.getElementById('focus-ring-path');
         playBtn.addEventListener('click', () => {
@@ -408,6 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (focusRingPath) focusRingPath.setAttribute('stroke-dasharray', `100, 100`);
                         showToast("Focus session completed!");
                         sendNotification("Focus Session Complete!", "Great job! Time for a short break.");
+                        playAlarm("Focus Session Complete!");
                     }
                 }, 1000);
             } else {
@@ -1181,6 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             timerBtn.innerHTML = '<i class="ri-play-fill"></i>';
                             showToast(`Time's up for task: ${STATE.customTasks[idx].message}`);
                             sendNotification("Task Timer Complete!", `Time's up for task: ${STATE.customTasks[idx].message}`);
+                            playAlarm(`Time's up: ${STATE.customTasks[idx].message}`);
                         }
                     }, 1000);
                 }
@@ -1445,5 +1500,76 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsText(file);
         });
     }
+
+    // --- 16. Global Alarms Logic ---
+    const addAlarmBtn = document.getElementById('add-alarm-btn');
+    const newAlarmTime = document.getElementById('new-alarm-time');
+    const newAlarmLabel = document.getElementById('new-alarm-label');
+    const alarmsList = document.getElementById('alarms-list');
+
+    function renderAlarms() {
+        if (!alarmsList) return;
+        alarmsList.innerHTML = '';
+        STATE.alarms.forEach((alarm, idx) => {
+            const li = document.createElement('li');
+            li.className = `task-item ${alarm.active ? '' : 'completed'}`;
+            li.style.display = 'flex';
+            li.style.justifyContent = 'space-between';
+            li.style.alignItems = 'center';
+
+            const infoDiv = document.createElement('div');
+            infoDiv.textContent = `${alarm.time} - ${alarm.label}`;
+            
+            const controlsDiv = document.createElement('div');
+            controlsDiv.style.display = 'flex';
+            controlsDiv.style.gap = '8px';
+
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'glass-btn icon-only small-btn';
+            toggleBtn.innerHTML = alarm.active ? '<i class="ri-alarm-line"></i>' : '<i class="ri-alarm-off-line"></i>';
+            toggleBtn.onclick = () => {
+                STATE.alarms[idx].active = !STATE.alarms[idx].active;
+                saveState();
+                renderAlarms();
+            };
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'glass-btn icon-only small-btn';
+            delBtn.style.color = '#fe4f70';
+            delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+            delBtn.onclick = () => {
+                STATE.alarms.splice(idx, 1);
+                saveState();
+                renderAlarms();
+            };
+
+            controlsDiv.appendChild(toggleBtn);
+            controlsDiv.appendChild(delBtn);
+            
+            li.appendChild(infoDiv);
+            li.appendChild(controlsDiv);
+            alarmsList.appendChild(li);
+        });
+    }
+
+    if (addAlarmBtn && newAlarmTime && newAlarmLabel) {
+        addAlarmBtn.addEventListener('click', () => {
+            const time = newAlarmTime.value;
+            const label = newAlarmLabel.value.trim();
+            
+            if (time && label) {
+                STATE.alarms.push({ time, label, active: true });
+                saveState();
+                renderAlarms();
+                newAlarmTime.value = '';
+                newAlarmLabel.value = '';
+                showToast("Alarm set successfully");
+            } else {
+                showToast("Please provide both time and label");
+            }
+        });
+    }
+    
+    renderAlarms();
 
 });
