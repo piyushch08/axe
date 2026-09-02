@@ -174,11 +174,31 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     transform-style: preserve-3d;
     perspective: 1000px;
+    opacity: 0;
+    animation: slideUpFade 0.6s ease forwards;
 }
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cascading delay for widgets inside active page */
+.page.active-page .glass-widget:nth-child(1) { animation-delay: 0.1s; }
+.page.active-page .glass-widget:nth-child(2) { animation-delay: 0.2s; }
+.page.active-page .glass-widget:nth-child(3) { animation-delay: 0.3s; }
+.page.active-page .glass-widget:nth-child(4) { animation-delay: 0.4s; }
+.page.active-page .glass-widget:nth-child(n+5) { animation-delay: 0.5s; }
 
 .glass-widget:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+    box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.5); /* Increased shadow depth */
 }
 
 .glass-btn {
@@ -363,6 +383,13 @@ body {
 .nav-item.active {
     border: 1px solid var(--glass-border);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    animation: navPulse 2s infinite;
+}
+
+@keyframes navPulse {
+    0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
 }
 
 .nav-item.active i {
@@ -658,6 +685,13 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
+.cal-cell.today {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow) inset;
+    font-weight: bold;
+}
+
 .cal-cell.empty {
     border: none;
     background: transparent;
@@ -694,6 +728,20 @@ body {
 }
 .cal-cell:hover .event-tooltip {
     opacity: 1;
+}
+
+.week-view-event {
+    background: var(--accent);
+    color: #000;
+    font-size: 0.7rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    margin-top: 4px;
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Diet */

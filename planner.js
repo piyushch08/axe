@@ -563,6 +563,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         
+        const actualToday = new Date();
+        const todayDateKey = `${actualToday.getFullYear()}-${String(actualToday.getMonth()+1).padStart(2,'0')}-${String(actualToday.getDate()).padStart(2,'0')}`;
+
         if (isMonthView) {
             calMonthYear.textContent = `${monthNames[month]} ${year}`;
             
@@ -590,6 +593,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                 
+                if (dateKey === todayDateKey) {
+                    cell.classList.add('today');
+                }
+                
                 if(STATE.events[dateKey]) {
                     cell.classList.add('has-event');
                     const dot = document.createElement('div');
@@ -609,8 +616,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 calGrid.appendChild(cell);
             }
         } else {
-            calMonthYear.textContent = `Week of ${monthNames[month]} ${year}`;
-            calGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px;">Week view is active. Toggle back to Month view to see all days.</div>';
+            // Week View Logic
+            const currentDayOfWeek = currentDate.getDay(); // 0 (Sun) to 6 (Sat)
+            const weekStart = new Date(currentDate);
+            weekStart.setDate(currentDate.getDate() - currentDayOfWeek);
+            
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            const startMonth = monthNames[weekStart.getMonth()];
+            const endMonth = monthNames[weekEnd.getMonth()];
+            
+            if (weekStart.getMonth() === weekEnd.getMonth()) {
+                calMonthYear.textContent = `${startMonth} ${weekStart.getFullYear()} (Week View)`;
+            } else {
+                calMonthYear.textContent = `${startMonth} - ${endMonth} ${weekStart.getFullYear()}`;
+            }
+
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            daysOfWeek.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'cal-day-header';
+                header.textContent = day;
+                calGrid.appendChild(header);
+            });
+
+            for(let i=0; i<7; i++) {
+                const renderDate = new Date(weekStart);
+                renderDate.setDate(weekStart.getDate() + i);
+                
+                const rYear = renderDate.getFullYear();
+                const rMonth = renderDate.getMonth();
+                const rDate = renderDate.getDate();
+                
+                const cell = document.createElement('div');
+                cell.className = 'cal-cell';
+                cell.style.height = '120px'; // Taller for week view
+                cell.textContent = rDate;
+                
+                const dateKey = `${rYear}-${String(rMonth+1).padStart(2,'0')}-${String(rDate).padStart(2,'0')}`;
+                
+                if (dateKey === todayDateKey) {
+                    cell.classList.add('today');
+                }
+                
+                if(STATE.events[dateKey]) {
+                    cell.classList.add('has-event');
+                    const eventBlock = document.createElement('div');
+                    eventBlock.className = 'week-view-event';
+                    eventBlock.textContent = typeof STATE.events[dateKey] === 'object' ? STATE.events[dateKey].name : 'Event';
+                    cell.appendChild(eventBlock);
+                }
+
+                cell.addEventListener('click', () => {
+                    openEventModal(dateKey, cell, monthNames[rMonth], rDate);
+                });
+
+                calGrid.appendChild(cell);
+            }
         }
     }
 
@@ -663,21 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (name && currentSelectedDateKey) {
                 STATE.events[currentSelectedDateKey] = { name };
                 saveState();
-                
-                currentSelectedCell.classList.add('has-event');
-                if(!currentSelectedCell.querySelector('.event-dot')) {
-                    const dot = document.createElement('div');
-                    dot.className = 'event-dot';
-                    currentSelectedCell.appendChild(dot);
-                }
-                let tooltip = currentSelectedCell.querySelector('.event-tooltip');
-                if(!tooltip) {
-                    tooltip = document.createElement('div');
-                    tooltip.className = 'event-tooltip';
-                    currentSelectedCell.appendChild(tooltip);
-                }
-                tooltip.textContent = name;
-                
+                renderCalendar();
                 showToast("Event saved!");
                 eventModal.style.display = 'none';
             }
@@ -689,13 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentSelectedDateKey) {
                 delete STATE.events[currentSelectedDateKey];
                 saveState();
-                
-                currentSelectedCell.classList.remove('has-event');
-                const dot = currentSelectedCell.querySelector('.event-dot');
-                if (dot) dot.remove();
-                const tooltip = currentSelectedCell.querySelector('.event-tooltip');
-                if (tooltip) tooltip.remove();
-                
+                renderCalendar();
                 showToast("Event deleted!");
                 eventModal.style.display = 'none';
             }
@@ -704,11 +747,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (calPrevBtn && calNextBtn) {
         calPrevBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
+            if (isMonthView) {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+            } else {
+                currentDate.setDate(currentDate.getDate() - 7);
+            }
             renderCalendar();
         });
         calNextBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
+            if (isMonthView) {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            } else {
+                currentDate.setDate(currentDate.getDate() + 7);
+            }
             renderCalendar();
         });
     }
