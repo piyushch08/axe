@@ -1369,56 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDashboardRings();
 
 
-    // --- 9. Premium Interactive Effects (Tilt & Ripple) ---
-    const widgets = document.querySelectorAll('.glass-widget');
-    widgets.forEach(widget => {
-        widget.addEventListener('mousemove', (e) => {
-            const rect = widget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            const rotateX = ((y - centerY) / centerY) * -5; 
-            const rotateY = ((x - centerX) / centerX) * 5;
-            
-            widget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
-        });
-        
-        widget.addEventListener('mouseleave', () => {
-            widget.style.transform = `perspective(1000px) rotateX(0) rotateY(0) translateY(0)`;
-        });
-    });
-
-    document.addEventListener('click', function (e) {
-        const btn = e.target.closest('.glass-btn');
-        if (btn) {
-            const rect = btn.getBoundingClientRect();
-            
-            const circle = document.createElement('span');
-            const diameter = Math.max(rect.width, rect.height);
-            const radius = diameter / 2;
-            
-            circle.style.width = circle.style.height = `${diameter}px`;
-            circle.style.left = `${e.clientX - rect.left - radius}px`;
-            circle.style.top = `${e.clientY - rect.top - radius}px`;
-            circle.classList.add('ripple');
-            
-            const existingRipple = btn.querySelector('.ripple');
-            if (existingRipple) {
-                existingRipple.remove();
-            }
-            
-            btn.appendChild(circle);
-            
-            setTimeout(() => {
-                if(circle.parentElement) {
-                    circle.remove();
-                }
-            }, 600);
-        }
-    });
+    // --- 9. Premium Interactive Effects (Removed for Minimalist Theme) ---
 
     // --- 10. Settings Modal ---
     const settingsBtn = document.getElementById('settings-btn');
