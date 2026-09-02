@@ -499,10 +499,17 @@
             <div class="settings-section" style="margin-top: 2rem;">
                 <h3><i class="ri-database-2-line"></i> Data Management</h3>
                 <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px; margin-bottom: 10px;">Your data is saved locally. Export it to back it up or move devices.</p>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button class="glass-btn primary" id="export-data-btn" style="flex: 1;"><i class="ri-download-line"></i> Backup Data</button>
                     <button class="glass-btn" id="import-data-btn" style="flex: 1;"><i class="ri-upload-line"></i> Restore Data</button>
                     <input type="file" id="import-data-input" accept=".json" style="display: none;">
+                </div>
+                
+                <hr style="border-color: #333; margin: 20px 0;">
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="glass-btn" id="reset-data-btn" style="flex: 1; color: #fe4f70; border-color: #fe4f70;"><i class="ri-alert-line"></i> Reset App Data</button>
+                    <button class="glass-btn primary" id="save-settings-btn" style="flex: 2;">Save Settings</button>
                 </div>
             </div>
         </div>

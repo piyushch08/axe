@@ -1385,6 +1385,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 settingsModal.style.display = 'none';
             });
         }
+        
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener('click', () => {
+                saveState();
+                settingsModal.style.display = 'none';
+                showToast("Settings saved successfully!");
+            });
+        }
+
+        const resetDataBtn = document.getElementById('reset-data-btn');
+        if (resetDataBtn) {
+            resetDataBtn.addEventListener('click', () => {
+                if(confirm("Are you sure you want to reset all app data? This cannot be undone.")) {
+                    localStorage.removeItem('aura_planner_state');
+                    location.reload();
+                }
+            });
+        }
+
         settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) {
                 settingsModal.style.display = 'none';
