@@ -87,7 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
         customBg: Storage.get('customBg', null),
         hiddenWidgets: Storage.get('hiddenWidgets', []),
         mood: Storage.get('mood', null),
-        scratchpadText: Storage.get('scratchpadText', '')
+        scratchpadText: Storage.get('scratchpadText', ''),
+        
+        // Configurable Goals & Defaults
+        calGoal: Storage.get('calGoal', 2200),
+        proGoal: Storage.get('proGoal', 150),
+        carbGoal: Storage.get('carbGoal', 200),
+        waterGoal: Storage.get('waterGoal', 2000),
+        defaultFocusTime: Storage.get('defaultFocusTime', 25),
+        defaultBreakTime: Storage.get('defaultBreakTime', 5),
+        alarmSound: Storage.get('alarmSound', 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
     };
 
     const todayStr = new Date().toDateString();
@@ -119,8 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
         Storage.set('customColor', STATE.customColor);
         Storage.set('customBg', STATE.customBg);
         Storage.set('activeWidgets', STATE.activeWidgets);
+        Storage.set('hiddenWidgets', STATE.hiddenWidgets);
         Storage.set('mood', STATE.mood);
         Storage.set('scratchpadText', STATE.scratchpadText);
+        
+        Storage.set('calGoal', STATE.calGoal);
+        Storage.set('proGoal', STATE.proGoal);
+        Storage.set('carbGoal', STATE.carbGoal);
+        Storage.set('waterGoal', STATE.waterGoal);
+        Storage.set('defaultFocusTime', STATE.defaultFocusTime);
+        Storage.set('defaultBreakTime', STATE.defaultBreakTime);
+        Storage.set('alarmSound', STATE.alarmSound);
         
         updateDashboardRings();
     }
@@ -153,7 +171,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Widget visibility
-        const allWidgets = ['progress-widget', 'trend-widget', 'scratchpad-widget'];
+        const allWidgets = [
+            'progress-widget', 'trend-widget', 'scratchpad-widget', 
+            'alarms-widget', 'deadlines-widget', 'macros-widget', 'exercises-widget'
+        ];
         allWidgets.forEach(id => {
             const w = document.getElementById(id);
             if (w) {
@@ -163,9 +184,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     w.classList.remove('hidden-widget');
                 }
             }
-            const cb = document.querySelector(`input[data-widget="${id}"]`);
-            if (cb) cb.checked = !STATE.hiddenWidgets.includes(id);
+            // Update the checkboxes in settings modal
+            const checkbox = document.querySelector(`input[data-widget="${id}"]`);
+            if (checkbox) {
+                checkbox.checked = !STATE.hiddenWidgets.includes(id);
+            }
         });
+
+        // Populate new settings inputs
+        const calInput = document.getElementById('setting-cal-goal');
+        if (calInput) calInput.value = STATE.calGoal;
+        const proInput = document.getElementById('setting-pro-goal');
+        if (proInput) proInput.value = STATE.proGoal;
+        const carbInput = document.getElementById('setting-carb-goal');
+        if (carbInput) carbInput.value = STATE.carbGoal;
+        const waterInput = document.getElementById('setting-water-goal');
+        if (waterInput) waterInput.value = STATE.waterGoal;
+        
+        const focusInput = document.getElementById('setting-focus-time');
+        if (focusInput) focusInput.value = STATE.defaultFocusTime;
+        const breakInput = document.getElementById('setting-break-time');
+        if (breakInput) breakInput.value = STATE.defaultBreakTime;
+        
+        const soundSelect = document.getElementById('setting-alarm-sound');
+        if (soundSelect) soundSelect.value = STATE.alarmSound;
         
         // Mood Tracking
         const emojis = document.querySelectorAll('#mood-emojis span');
@@ -209,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const studyP = (STATE.studyMins / 120) * 100;
         setRing('study', studyP);
 
-        const waterP = (STATE.waterIntake / 2000) * 50;
+        const waterP = (STATE.waterIntake / STATE.waterGoal) * 50;
         const mealsP = Math.min(STATE.meals.length / 4, 1) * 50;
         setRing('diet', waterP + mealsP);
 
@@ -325,6 +367,72 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Settings Inputs Listeners
+    const updateGoal = (id, stateKey) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', (e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val > 0) {
+                    STATE[stateKey] = val;
+                    saveState();
+                    showToast("Setting saved!");
+                    
+                    // If it's a diet goal, try to update UI immediately
+                    if (['calGoal', 'proGoal', 'carbGoal'].includes(stateKey) && typeof updateDietUI === 'function') {
+                        updateDietUI();
+                    } else if (stateKey === 'waterGoal') {
+                        updateDashboardRings();
+                    }
+                }
+            });
+        }
+    };
+
+    updateGoal('setting-cal-goal', 'calGoal');
+    updateGoal('setting-pro-goal', 'proGoal');
+    updateGoal('setting-carb-goal', 'carbGoal');
+    updateGoal('setting-water-goal', 'waterGoal');
+    
+    // Timer Defaults Listeners
+    const focusTimeInput = document.getElementById('setting-focus-time');
+    if (focusTimeInput) {
+        focusTimeInput.addEventListener('change', (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (!isNaN(val) && val > 0) {
+                STATE.defaultFocusTime = val;
+                saveState();
+                showToast("Default Focus Time saved! It will apply to new sessions.");
+            }
+        });
+    }
+
+    const breakTimeInput = document.getElementById('setting-break-time');
+    if (breakTimeInput) {
+        breakTimeInput.addEventListener('change', (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (!isNaN(val) && val > 0) {
+                STATE.defaultBreakTime = val;
+                saveState();
+                showToast("Default Break Time saved!");
+            }
+        });
+    }
+
+    // Alarm Sound Listener
+    const alarmSoundSelect = document.getElementById('setting-alarm-sound');
+    if (alarmSoundSelect) {
+        alarmSoundSelect.addEventListener('change', (e) => {
+            STATE.alarmSound = e.target.value;
+            saveState();
+            const audioEl = document.getElementById('alarm-audio');
+            if (audioEl) {
+                audioEl.src = STATE.alarmSound;
+            }
+            showToast("Alarm sound updated!");
+        });
+    }
+
     const moodEmojis = document.getElementById('mood-emojis');
     if (moodEmojis) {
         moodEmojis.addEventListener('click', (e) => {
@@ -407,8 +515,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let timerInterval;
     let isRunning = false;
-    let defaultTime = 25 * 60;
+    let defaultTime = STATE.defaultFocusTime * 60;
     let time = defaultTime;
+
+    if (pomodoroInput) {
+        pomodoroInput.value = STATE.defaultFocusTime;
+    }
+    if (timeLeft) {
+        timeLeft.textContent = formatTime(time);
+    }
 
     if (setTimerBtn && pomodoroInput) {
         setTimerBtn.addEventListener('click', () => {
@@ -490,11 +605,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 isRunning = false;
                 clearInterval(timerInterval);
                 playBtn.innerHTML = '<i class="ri-play-fill"></i>';
-                time = 5 * 60; // 5 min break
+                time = STATE.defaultBreakTime * 60; // Use customized break time
                 timeLeft.textContent = formatTime(time);
                 const focusRingPath = document.getElementById('focus-ring-path');
                 if (focusRingPath) focusRingPath.setAttribute('stroke-dasharray', `100, 100`);
-                showToast("Skipped to Break");
+                showToast(`Skipped to ${STATE.defaultBreakTime} min Break`);
             });
         }
     }
@@ -836,18 +951,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const addWaterBtn = document.getElementById('add-water-btn');
     const waterLevelFill = document.getElementById('water-level-fill');
     const waterText = document.getElementById('water-text');
-    const maxWater = 2000;
+
+    // Make updateDietUI globally available so settings can call it
+    window.updateDietUI = renderDiet;
 
     function renderDiet() {
         if(waterLevelFill && waterText) {
-            let percentage = Math.min((STATE.waterIntake / maxWater) * 100, 100);
+            let percentage = Math.min((STATE.waterIntake / STATE.waterGoal) * 100, 100);
             waterLevelFill.style.height = `${percentage}%`;
-            waterText.textContent = `${STATE.waterIntake} / ${maxWater} ml`;
+            waterText.textContent = `${STATE.waterIntake} / ${STATE.waterGoal} ml`;
         }
 
-        const calGoal = 2200;
-        const proGoal = 150;
-        const carbGoal = 200;
+        const calGoal = STATE.calGoal;
+        const proGoal = STATE.proGoal;
+        const carbGoal = STATE.carbGoal;
         
         const totalMeals = STATE.meals.length;
         const estCal = totalMeals * 500;

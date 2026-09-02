@@ -425,16 +425,73 @@
             </div>
 
             <div class="settings-section" style="margin-top: 2rem;">
-                <h3><i class="ri-layout-masonry-line"></i> Dashboard Widgets</h3>
-                <div class="widget-toggles" id="widget-toggles" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <h3><i class="ri-heart-pulse-line"></i> Diet Goals</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Calories</label>
+                        <input type="number" id="setting-cal-goal" class="glass-input" style="margin-top: 2px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Protein (g)</label>
+                        <input type="number" id="setting-pro-goal" class="glass-input" style="margin-top: 2px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Carbs (g)</label>
+                        <input type="number" id="setting-carb-goal" class="glass-input" style="margin-top: 2px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Water (ml)</label>
+                        <input type="number" id="setting-water-goal" class="glass-input" style="margin-top: 2px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-top: 2rem;">
+                <h3><i class="ri-timer-line"></i> Timer & Alarm Preferences</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Focus Session (min)</label>
+                        <input type="number" id="setting-focus-time" class="glass-input" style="margin-top: 2px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Short Break (min)</label>
+                        <input type="number" id="setting-break-time" class="glass-input" style="margin-top: 2px;">
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Alarm Sound</label>
+                    <select id="setting-alarm-sound" class="glass-input" style="margin-top: 2px; padding: 0.5rem; width: 100%;">
+                        <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">Digital Beep</option>
+                        <option value="https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3">Gentle Bell</option>
+                        <option value="https://assets.mixkit.co/active_storage/sfx/2868/2868-preview.mp3">Fast Chime</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-top: 2rem;">
+                <h3><i class="ri-layout-masonry-line"></i> Widget Manager</h3>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px; margin-bottom: 10px;">Hide or show widgets across all pages.</p>
+                <div class="widget-toggles" id="widget-toggles" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                         <input type="checkbox" data-widget="progress-widget" checked> Daily Goals Rings
                     </label>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" data-widget="trend-widget" checked> Weekly Consistency Trend
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" data-widget="trend-widget" checked> Weekly Trend
                     </label>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" data-widget="scratchpad-widget" checked> Quick Notes Scratchpad
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" data-widget="scratchpad-widget" checked> Quick Notes
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" data-widget="alarms-widget" checked> Global Alarms
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" data-widget="deadlines-widget" checked> Upcoming Deadlines
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" data-widget="macros-widget" checked> Diet Macros
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" data-widget="exercises-widget" checked> Exercise List
                     </label>
                 </div>
             </div>
