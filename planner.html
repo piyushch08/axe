@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="space">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axe Planner</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="planner.css">
+</head>
+<body>
+    <div class="dynamic-bg" id="dynamic-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="logo">
+                <i class="ri-blaze-line"></i>
+                <span>Axe</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="nav-item active" data-target="dashboard">
+                    <i class="ri-dashboard-line"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-target="study">
+                    <i class="ri-book-open-line"></i>
+                    <span>Study</span>
+                </li>
+                <li class="nav-item" data-target="calendar">
+                    <i class="ri-calendar-todo-line"></i>
+                    <span>Calendar</span>
+                </li>
+                <li class="nav-item" data-target="diet">
+                    <i class="ri-restaurant-line"></i>
+                    <span>Diet</span>
+                </li>
+                <li class="nav-item" data-target="exercise">
+                    <i class="ri-run-line"></i>
+                    <span>Exercise</span>
+                </li>
+                <li class="nav-item" data-target="todo">
+                    <i class="ri-list-check"></i>
+                    <span>To-Do</span>
+                </li>
+            </ul>
+
+        
+
+            <button class="glass-btn w-full mb-4" id="zen-mode-btn" style="margin-bottom: 1rem;"><i class="ri-focus-2-line"></i> Zen Mode</button>
+
+            <div class="sidebar-bottom">
+                <div class="user-profile" id="editable-profile" style="cursor: pointer;" title="Click to edit profile">
+                    <div class="avatar">
+                        <i class="ri-user-smile-line" id="profile-icon"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="name" contenteditable="true" id="profile-name">Explorer</span>
+                        <span class="status" contenteditable="true" id="profile-status">Focusing</span>
+                    </div>
+                </div>
+                <button class="glass-btn w-full mt-4" id="settings-btn"><i class="ri-settings-4-line"></i> Settings</button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Mobile Header -->
+            <header class="mobile-header">
+                <button class="menu-btn" id="menu-btn">
+                    <i class="ri-menu-4-line"></i>
+                </button>
+                <h2>Axe</h2>
+            </header>
+
+            <!-- Pages Container -->
+            <div class="pages-container">
+                
+                <!-- Page 1: Dashboard -->
+                <section class="page active-page" id="dashboard">
+                    <header class="page-header">
+                        <div>
+                            <h1 class="greeting" id="greeting-text">Good Morning, Explorer.</h1>
+                            <p class="date-display" id="current-date">Today is...</p>
+                        </div>
+                        <div class="mood-tracker glass-widget" style="padding: 0.5rem 1rem; text-align: center; border-radius: 20px;">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">How are you feeling?</span>
+                            <div class="mood-emojis" id="mood-emojis" style="display: flex; gap: 8px; margin-top: 5px; cursor: pointer; font-size: 1.2rem;">
+                                <span data-mood="sad" title="Sad" style="opacity: 0.5; transition: 0.3s;">😢</span>
+                                <span data-mood="neutral" title="Neutral" style="opacity: 0.5; transition: 0.3s;">😐</span>
+                                <span data-mood="good" title="Good" style="opacity: 0.5; transition: 0.3s;">🙂</span>
+                                <span data-mood="great" title="Great" style="opacity: 0.5; transition: 0.3s;">😃</span>
+                                <span data-mood="awesome" title="Awesome" style="opacity: 0.5; transition: 0.3s;">🤩</span>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <div class="dashboard-grid">
+                        <!-- The Theme Controller was moved to Global Settings -->
+
+                        <!-- Progress Rings -->
+                        <div class="glass-widget progress-widget" id="progress-widget">
+                            <h3><i class="ri-donut-chart-fill"></i> Daily Goals</h3>
+                            <div class="rings-container">
+                                <div class="ring-item">
+                                    <svg viewBox="0 0 36 36" class="circular-chart study-chart">
+                                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path class="circle" id="study-ring-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <text x="18" y="20.35" class="percentage" id="study-ring-text">0%</text>
+                                    </svg>
+                                    <span>Study</span>
+                                </div>
+                                <div class="ring-item">
+                                    <svg viewBox="0 0 36 36" class="circular-chart diet-chart">
+                                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path class="circle" id="diet-ring-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <text x="18" y="20.35" class="percentage" id="diet-ring-text">0%</text>
+                                    </svg>
+                                    <span>Diet</span>
+                                </div>
+                                <div class="ring-item">
+                                    <svg viewBox="0 0 36 36" class="circular-chart exercise-chart">
+                                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path class="circle" id="exercise-ring-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <text x="18" y="20.35" class="percentage" id="exercise-ring-text">0%</text>
+                                    </svg>
+                                    <span>Exercise</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Trend -->
+                        <div class="glass-widget trend-widget" id="trend-widget">
+                            <h3><i class="ri-line-chart-line"></i> Weekly Consistency</h3>
+                            <div class="mock-chart" id="weekly-chart-bars">
+                                <div class="chart-bar" style="height: 10%"><span>M</span></div>
+                                <div class="chart-bar" style="height: 10%"><span>T</span></div>
+                                <div class="chart-bar" style="height: 10%"><span>W</span></div>
+                                <div class="chart-bar" style="height: 10%"><span>T</span></div>
+                                <div class="chart-bar" style="height: 10%"><span>F</span></div>
+                                <div class="chart-bar" style="height: 10%"><span>S</span></div>
+                                <div class="chart-bar" style="height: 10%"><span>S</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Scratchpad / Quick Notes -->
+                        <div class="glass-widget scratchpad-widget" id="scratchpad-widget" style="grid-column: 1 / -1;">
+                            <h3><i class="ri-sticky-note-line"></i> Quick Notes</h3>
+                            <textarea id="scratchpad-text" class="glass-input" placeholder="Jot down quick thoughts here... (Auto-saves)" style="height: 120px; resize: vertical; margin-top: 10px;"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Page 2: Study Planner -->
+                <section class="page" id="study">
+                    <header class="page-header">
+                        <h1>Study Hub</h1>
+                        <p>Track your academic progression and focus sessions.</p>
+                    </header>
+                    <div class="study-grid">
+                        <div class="glass-widget focus-timer">
+                            <h3><i class="ri-focus-3-line"></i> Deep Work</h3>
+                            <div class="timer-settings" style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                                <input type="number" id="pomodoro-input" class="glass-input" value="25" min="1" style="width: 80px; text-align: center; margin: 0; padding: 0.5rem;">
+                                <button class="glass-btn small-btn" id="set-timer-btn" style="padding: 0.5rem 1rem;">Set</button>
+                            </div>
+                            <div class="timer-display">
+                                <span id="time-left">25:00</span>
+                            </div>
+                            <div class="timer-controls">
+                                <button class="glass-btn primary" id="timer-play"><i class="ri-play-fill"></i></button>
+                                <button class="glass-btn" id="timer-stop"><i class="ri-stop-fill"></i></button>
+                                <button class="glass-btn" id="timer-skip"><i class="ri-skip-forward-fill"></i></button>
+                            </div>
+                        </div>
+                        <div class="glass-widget practice-logger">
+                            <h3><i class="ri-code-box-line"></i> Programming Practice</h3>
+                            <form class="glass-form" id="study-form">
+                                <select class="glass-input" id="study-topic">
+                                    <option value="Python Logic">Python Logic</option>
+                                    <option value="C Exercises">C Exercises</option>
+                                    <option value="Data Science">Data Science</option>
+                                </select>
+                                <input type="number" class="glass-input" id="study-duration" placeholder="Minutes spent" required min="1">
+                                <button type="submit" class="glass-btn w-full mt-4">Log Session</button>
+                            </form>
+                            <div id="practice-log-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Logged sessions will appear here -->
+                            </div>
+                        </div>
+                        <div class="glass-widget deadlines">
+                            <h3><i class="ri-alarm-warning-line"></i> Upcoming Deadlines</h3>
+                            <div class="add-deadline-form" style="display: flex; gap: 10px; margin-bottom: 1rem; margin-top: 10px;">
+                                <input type="text" id="new-deadline-name" class="glass-input" placeholder="Task name" style="flex: 2; margin: 0; padding: 0.5rem;">
+                                <input type="text" id="new-deadline-date" class="glass-input" placeholder="e.g. Tomorrow" style="flex: 1; margin: 0; padding: 0.5rem;">
+                                <button class="glass-btn primary small-btn" id="add-deadline-btn"><i class="ri-add-line"></i></button>
+                            </div>
+                            <ul class="task-list" id="deadline-list">
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Page 3: Calendar -->
+                <section class="page" id="calendar">
+                    <header class="page-header">
+                        <h1>Calendar</h1>
+                        <div class="view-toggles">
+                            <button class="glass-btn active">Month</button>
+                            <button class="glass-btn">Week</button>
+                        </div>
+                    </header>
+                    <div class="glass-widget calendar-container">
+                        <div class="calendar-header">
+                            <button class="glass-btn icon-only" id="cal-prev-btn"><i class="ri-arrow-left-s-line"></i></button>
+                            <h3 id="cal-month-year">October 2026</h3>
+                            <button class="glass-btn icon-only" id="cal-next-btn"><i class="ri-arrow-right-s-line"></i></button>
+                        </div>
+                        <div class="calendar-grid" id="cal-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Page 4: Diet Plan -->
+                <section class="page" id="diet">
+                    <header class="page-header">
+                        <h1>Diet & Nutrition</h1>
+                    </header>
+                    <div class="diet-grid">
+                        <div class="glass-widget macros">
+                            <h3>Daily Goals</h3>
+                            <div class="macro-bar">
+                                <span id="calories-text">Calories (0/2200)</span>
+                                <div class="progress-track"><div class="progress-fill" id="calories-fill" style="width: 0%"></div></div>
+                            </div>
+                            <div class="macro-bar">
+                                <span id="protein-text">Protein (0g/150g)</span>
+                                <div class="progress-track"><div class="progress-fill" id="protein-fill" style="width: 0%"></div></div>
+                            </div>
+                            <div class="macro-bar">
+                                <span id="carbs-text">Carbs (0g/200g)</span>
+                                <div class="progress-track"><div class="progress-fill" id="carbs-fill" style="width: 0%"></div></div>
+                            </div>
+                        </div>
+                        <div class="glass-widget water-tracker">
+                            <h3><i class="ri-drop-line"></i> Water Intake</h3>
+                            <div class="water-glass">
+                                <div class="water-level" id="water-level-fill" style="height: 0%"></div>
+                            </div>
+                            <div class="water-controls">
+                                <p id="water-text">0 / 2000 ml</p>
+                                <button class="glass-btn mt-4" id="add-water-btn"><i class="ri-add-line"></i> 250ml</button>
+                            </div>
+                        </div>
+                        <div class="glass-widget meals">
+                            <h3>Meals</h3>
+                            <div id="meal-list">
+                                <div class="meal-card">
+                                    <h4>Breakfast</h4>
+                                    <p>Oatmeal & Berries</p>
+                                </div>
+                                <div class="meal-card">
+                                    <h4>Lunch</h4>
+                                    <p>Grilled Chicken Salad</p>
+                                </div>
+                            </div>
+                            <div class="meal-card empty" id="add-meal-card" style="display: flex; align-items: center; justify-content: space-between;">
+                                <input type="text" id="new-meal-input" class="glass-input" placeholder="E.g. Apple" style="margin: 0; flex: 1; display: none;">
+                                <button class="glass-btn small" id="add-meal-btn" style="width: 100%;">+ Add Meal</button>
+                                <button class="glass-btn primary small" id="save-meal-btn" style="display: none; margin-left: 10px;">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Page 5: Exercise Planner -->
+                <section class="page" id="exercise">
+                    <header class="page-header">
+                        <h1>Exercise Hub</h1>
+                        <p>Weekly exercise tracker and routines.</p>
+                    </header>
+                    <div class="exercise-grid">
+                        <div class="glass-widget active-routine">
+                            <h3>Today's Routine</h3>
+                            <h2 class="routine-title">Push Day (Chest, Shoulders, Triceps)</h2>
+                            <div class="exercise-list" id="exercise-list-container">
+                                <div class="ex-item">
+                                    <span>Bench Press</span>
+                                    <div class="ex-controls">
+                                        <span>4x8-10</span>
+                                        <button class="glass-btn icon-only small-btn check-ex-btn"><i class="ri-check-line"></i></button>
+                                    </div>
+                                </div>
+                                <div class="ex-item">
+                                    <span>Overhead Press</span>
+                                    <div class="ex-controls">
+                                        <span>3x10-12</span>
+                                        <button class="glass-btn icon-only small-btn check-ex-btn"><i class="ri-check-line"></i></button>
+                                    </div>
+                                </div>
+                                <div class="ex-item">
+                                    <span>Tricep Extensions</span>
+                                    <div class="ex-controls">
+                                        <span>3x12-15</span>
+                                        <button class="glass-btn icon-only small-btn check-ex-btn"><i class="ri-check-line"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="add-exercise-form" style="display: flex; gap: 10px; margin-top: 1rem;">
+                                <input type="text" id="new-ex-name" class="glass-input" placeholder="Exercise" style="flex: 2; margin: 0; padding: 0.5rem;">
+                                <input type="text" id="new-ex-sets" class="glass-input" placeholder="Sets/Reps" style="flex: 1; margin: 0; padding: 0.5rem;">
+                                <button class="glass-btn primary small-btn" id="add-ex-btn"><i class="ri-add-line"></i></button>
+                            </div>
+                            <button class="glass-btn primary w-full mt-4" id="start-workout-btn">Start Workout</button>
+                        </div>
+                        <div class="glass-widget streak">
+                            <h3><i class="ri-fire-line"></i> Weekly Streak</h3>
+                            <div class="streak-days" id="streak-container">
+                                <div class="s-day active">M</div>
+                                <div class="s-day active">T</div>
+                                <div class="s-day">W</div>
+                                <div class="s-day active">T</div>
+                                <div class="s-day">F</div>
+                                <div class="s-day">S</div>
+                                <div class="s-day">S</div>
+                            </div>
+                            <button class="glass-btn w-full mt-4" id="log-today-btn">Log Today's Activity</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Page 6: Custom To-Do List -->
+                <section class="page" id="todo">
+                    <header class="page-header">
+                        <h1>Custom Tasks</h1>
+                        <p>Create your own to-do list with dedicated focus timers.</p>
+                    </header>
+                    <div class="todo-grid" style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; max-width: 800px; margin: 0 auto;">
+                        
+                        <!-- Add Task Form -->
+                        <div class="glass-widget">
+                            <h3><i class="ri-add-circle-line"></i> New Task</h3>
+                            <form class="glass-form" id="custom-todo-form" style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; margin-top: 1rem;">
+                                <input type="text" id="todo-msg" class="glass-input" placeholder="What needs to be done?" required style="flex: 2; margin-bottom: 0;">
+                                <input type="number" id="todo-time" class="glass-input" placeholder="Minutes (optional)" min="1" style="flex: 1; margin-bottom: 0;">
+                                <button type="submit" class="glass-btn primary" style="padding: 0.75rem 1.5rem; height: 100%;">Add Task</button>
+                            </form>
+                        </div>
+
+                        <!-- Task List -->
+                        <div class="glass-widget">
+                            <h3><i class="ri-list-check"></i> Your Tasks</h3>
+                            <ul class="task-list custom-todo-list" id="custom-todo-list">
+                                <!-- Tasks injected via JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Global Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="glass-widget modal-content">
+            <header class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2><i class="ri-settings-4-line"></i> Global Settings</h2>
+                <button class="glass-btn icon-only close-modal-btn"><i class="ri-close-line"></i></button>
+            </header>
+            
+            <div class="settings-section">
+                <h3><i class="ri-palette-line"></i> Theme & Personalization</h3>
+                <div class="theme-options" style="margin-top: 10px;">
+                    <button class="theme-btn active" data-theme="space">Deep Space</button>
+                    <button class="theme-btn" data-theme="aurora">Aurora</button>
+                    <button class="theme-btn" data-theme="ocean">Ocean</button>
+                    <button class="theme-btn" data-theme="light">Light Glass</button>
+                </div>
+
+                <div class="custom-theme-options" style="margin-top: 1.5rem;">
+                    <h4>Custom Accent Color</h4>
+                    <input type="color" id="custom-color-picker" value="#00f2fe" style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer; margin-top: 5px; background: transparent;">
+                    
+                    <h4 style="margin-top: 1rem;">Custom Background URL</h4>
+                    <input type="url" id="custom-bg-url" class="glass-input" placeholder="https://example.com/image.jpg" style="margin-top: 5px;">
+                    <button class="glass-btn small-btn" id="clear-bg-btn">Clear Custom BG</button>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-top: 2rem;">
+                <h3><i class="ri-layout-masonry-line"></i> Dashboard Widgets</h3>
+                <div class="widget-toggles" id="widget-toggles" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" data-widget="progress-widget" checked> Daily Goals Rings
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" data-widget="trend-widget" checked> Weekly Consistency Trend
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" data-widget="scratchpad-widget" checked> Quick Notes Scratchpad
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-top: 2rem;">
+                <h3><i class="ri-database-2-line"></i> Data Management</h3>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px; margin-bottom: 10px;">Your data is saved locally. Export it to back it up or move devices.</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="glass-btn primary" id="export-data-btn" style="flex: 1;"><i class="ri-download-line"></i> Backup Data</button>
+                    <button class="glass-btn" id="import-data-btn" style="flex: 1;"><i class="ri-upload-line"></i> Restore Data</button>
+                    <input type="file" id="import-data-input" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="planner.js"></script>
+</body>
+</html>
