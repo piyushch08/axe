@@ -210,11 +210,9 @@
                         <div class="glass-widget practice-logger">
                             <h3><i class="ri-code-box-line"></i> Programming Practice</h3>
                             <form class="glass-form" id="study-form">
-                                <select class="glass-input" id="study-topic">
-                                    <option value="Python Logic">Python Logic</option>
-                                    <option value="C Exercises">C Exercises</option>
-                                    <option value="Data Science">Data Science</option>
-                                </select>
+                                <input type="text" class="glass-input" id="study-topic" placeholder="Select or type a topic" list="study-topics-list" required>
+                                <datalist id="study-topics-list">
+                                </datalist>
                                 <input type="number" class="glass-input" id="study-duration" placeholder="Minutes spent" required min="1">
                                 <button type="submit" class="glass-btn w-full mt-4">Log Session</button>
                             </form>
@@ -300,10 +298,17 @@
                                     <p>Grilled Chicken Salad</p>
                                 </div>
                             </div>
-                            <div class="meal-card empty" id="add-meal-card" style="display: flex; align-items: center; justify-content: space-between;">
-                                <input type="text" id="new-meal-input" class="glass-input" placeholder="E.g. Apple" style="margin: 0; flex: 1; display: none;">
+                            <div class="meal-card empty" id="add-meal-card" style="display: flex; flex-direction: column; gap: 10px;">
                                 <button class="glass-btn small" id="add-meal-btn" style="width: 100%;">+ Add Meal</button>
-                                <button class="glass-btn primary small" id="save-meal-btn" style="display: none; margin-left: 10px;">Save</button>
+                                <div id="add-meal-inputs" style="display: none; width: 100%; flex-direction: column; gap: 8px;">
+                                    <input type="text" id="new-meal-input" class="glass-input" placeholder="E.g. Apple" style="margin: 0;">
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="number" id="new-meal-cals" class="glass-input" placeholder="Cals" style="margin: 0; flex: 1;" min="0">
+                                        <input type="number" id="new-meal-pro" class="glass-input" placeholder="Pro(g)" style="margin: 0; flex: 1;" min="0">
+                                        <input type="number" id="new-meal-carbs" class="glass-input" placeholder="Carbs(g)" style="margin: 0; flex: 1;" min="0">
+                                    </div>
+                                    <button class="glass-btn primary small" id="save-meal-btn" style="width: 100%;">Save</button>
+                                </div>
                             </div>
                         </div>
                     </div>

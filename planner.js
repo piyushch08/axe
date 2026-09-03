@@ -68,8 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const STATE = {
         studyMins: Storage.get('studyMins', 0),
         waterIntake: Storage.get('waterIntake', 0),
-        meals: Storage.get('meals', [{name: 'Oatmeal & Berries', type: 'Breakfast'}, {name: 'Grilled Chicken Salad', type: 'Lunch'}]),
+        meals: Storage.get('meals', [{name: 'Oatmeal & Berries', type: 'Breakfast', cals: 350, pro: 10, carbs: 45}, {name: 'Grilled Chicken Salad', type: 'Lunch', cals: 450, pro: 35, carbs: 15}]),
         studyLogs: Storage.get('studyLogs', []),
+        studyTopics: Storage.get('studyTopics', ['Python Logic', 'C Exercises', 'Data Science', 'Biology']),
         customTasks: Storage.get('customTasks', []),
         events: Storage.get('events', {}),
         exercises: Storage.get('exercises', [
@@ -118,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Storage.set('waterIntake', STATE.waterIntake);
         Storage.set('meals', STATE.meals);
         Storage.set('studyLogs', STATE.studyLogs);
+        Storage.set('studyTopics', STATE.studyTopics);
         Storage.set('customTasks', STATE.customTasks);
         Storage.set('events', STATE.events);
         Storage.set('exercises', STATE.exercises);
@@ -614,9 +616,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Practice Logger
     const studyForm = document.getElementById('study-form');
     const practiceLogList = document.getElementById('practice-log-list');
+    const studyTopicsList = document.getElementById('study-topics-list');
+
+    function renderStudyTopics() {
+        if (!studyTopicsList) return;
+        studyTopicsList.innerHTML = '';
+        STATE.studyTopics.forEach(topic => {
+            const option = document.createElement('option');
+            option.value = topic;
+            studyTopicsList.appendChild(option);
+        });
+    }
 
     function renderStudyLogs() {
         if(!practiceLogList) return;
@@ -634,17 +646,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (studyForm) {
+        renderStudyTopics();
         studyForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const topic = document.getElementById('study-topic').value;
+            const topic = document.getElementById('study-topic').value.trim();
             const duration = parseInt(document.getElementById('study-duration').value, 10);
-            if(duration > 0) {
+            if(duration > 0 && topic) {
+                if (!STATE.studyTopics.includes(topic)) {
+                    STATE.studyTopics.push(topic);
+                    renderStudyTopics();
+                }
                 STATE.studyLogs.push({ topic, duration, date: new Date().toISOString() });
                 STATE.studyMins += duration;
                 saveState();
                 renderStudyLogs();
                 showToast(`Logged ${duration} mins of ${topic}`);
                 document.getElementById('study-duration').value = '';
+                document.getElementById('study-topic').value = '';
             }
         });
         renderStudyLogs();
@@ -966,10 +984,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const proGoal = STATE.proGoal;
         const carbGoal = STATE.carbGoal;
         
-        const totalMeals = STATE.meals.length;
-        const estCal = totalMeals * 500;
-        const estPro = totalMeals * 30;
-        const estCarb = totalMeals * 40;
+        let estCal = 0;
+        let estPro = 0;
+        let estCarb = 0;
+        
+        STATE.meals.forEach(meal => {
+            estCal += (meal.cals || 0);
+            estPro += (meal.pro || 0);
+            estCarb += (meal.carbs || 0);
+        });
 
         const calText = document.getElementById('calories-text');
         const calFill = document.getElementById('calories-fill');
@@ -1006,7 +1029,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addMealBtn = document.getElementById('add-meal-btn');
     const saveMealBtn = document.getElementById('save-meal-btn');
+    const addMealInputs = document.getElementById('add-meal-inputs');
     const newMealInput = document.getElementById('new-meal-input');
+    const newMealCals = document.getElementById('new-meal-cals');
+    const newMealPro = document.getElementById('new-meal-pro');
+    const newMealCarbs = document.getElementById('new-meal-carbs');
     const mealList = document.getElementById('meal-list');
     
     function renderMeals() {
@@ -1020,9 +1047,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const newMeal = document.createElement('div');
             newMeal.className = 'meal-card';
             newMeal.style.position = 'relative';
+            
+            let macrosHtml = '';
+            if(meal.cals !== undefined) {
+                macrosHtml = `<p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">${meal.cals} kcal | ${meal.pro}g Pro | ${meal.carbs}g Carb</p>`;
+            }
+
             newMeal.innerHTML = `
                 <h4>${meal.type}</h4>
                 <p>${meal.name}</p>
+                ${macrosHtml}
                 <button class="glass-btn icon-only small-btn delete-meal-btn" data-idx="${idx}" style="position: absolute; top: 5px; right: 5px; color: #fe4f70; padding: 2px;">
                     <i class="ri-delete-bin-line"></i>
                 </button>
@@ -1031,26 +1065,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (addMealBtn && saveMealBtn && newMealInput && mealList) {
+    if (addMealBtn && saveMealBtn && newMealInput && mealList && addMealInputs) {
         addMealBtn.addEventListener('click', () => {
             addMealBtn.style.display = 'none';
-            newMealInput.style.display = 'block';
-            saveMealBtn.style.display = 'block';
+            addMealInputs.style.display = 'flex';
             newMealInput.focus();
         });
         
         saveMealBtn.addEventListener('click', () => {
             const mealName = newMealInput.value.trim();
+            const cals = parseInt(newMealCals.value, 10) || 0;
+            const pro = parseInt(newMealPro.value, 10) || 0;
+            const carbs = parseInt(newMealCarbs.value, 10) || 0;
+
             if (mealName) {
-                STATE.meals.push({ name: mealName, type: 'Custom Meal' });
+                STATE.meals.push({ name: mealName, type: 'Custom Meal', cals, pro, carbs });
                 saveState();
                 renderDiet();
                 newMealInput.value = '';
+                newMealCals.value = '';
+                newMealPro.value = '';
+                newMealCarbs.value = '';
                 showToast("Meal added!");
             }
             addMealBtn.style.display = 'block';
-            newMealInput.style.display = 'none';
-            saveMealBtn.style.display = 'none';
+            addMealInputs.style.display = 'none';
         });
 
         mealList.addEventListener('click', (e) => {
