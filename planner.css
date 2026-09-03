@@ -1,42 +1,56 @@
 :root {
-    /* Default Theme: Deep Space */
-    --bg-gradient: #0d0d0f;
-    --glass-bg: #161618;
-    --glass-border: #2a2a2a;
-    --glass-shadow: none;
-    --text-primary: #f0f0f0;
-    --text-secondary: #888888;
-    --accent: #5e81ac;
-    --accent-glow: transparent;
-    --sidebar-bg: #121214;
+    /* Unified Minimal & Vibrant Dark Theme */
+    --bg-gradient: #0f1015;
+    --glass-bg: rgba(23, 25, 35, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.03);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    --text-primary: #f0f2f5;
+    --text-secondary: #94a3b8;
+    --accent: #8b5cf6;
+    --accent-glow: rgba(139, 92, 246, 0.3);
+    --sidebar-bg: rgba(15, 16, 21, 0.8);
+    
+    /* Semantic Colors */
+    --success: #10b981;
+    --success-glow: rgba(16, 185, 129, 0.15);
+    --warning: #f59e0b;
+    --warning-glow: rgba(245, 158, 11, 0.15);
+    --danger: #ef4444;
+    --danger-glow: rgba(239, 68, 68, 0.15);
+    --info: #3b82f6;
+    --info-glow: rgba(59, 130, 246, 0.15);
 }
 
-[data-theme="aurora"] {
-    --bg-gradient: #0f1412;
-    --glass-bg: #181d1a;
-    --glass-border: #2c3530;
-    --accent: #8fbcbb;
-    --accent-glow: transparent;
+/* Add colorful tints to widgets based on their purpose */
+#macros-widget, #progress-widget {
+    background: linear-gradient(145deg, var(--glass-bg), var(--success-glow));
+    border-color: rgba(16, 185, 129, 0.1);
 }
 
-[data-theme="ocean"] {
-    --bg-gradient: #0d1217;
-    --glass-bg: #161b22;
-    --glass-border: #30363d;
-    --accent: #81a1c1;
-    --accent-glow: transparent;
+#trend-widget, #scratchpad-widget {
+    background: linear-gradient(145deg, var(--glass-bg), var(--info-glow));
+    border-color: rgba(59, 130, 246, 0.1);
 }
 
-[data-theme="light"] {
-    /* Minimalist Light Mode */
-    --bg-gradient: #f8f9fa;
-    --glass-bg: #ffffff;
-    --glass-border: #e2e8f0;
-    --glass-shadow: none;
-    --text-primary: #1a202c;
-    --text-secondary: #4a5568;
-    --accent: #3182ce;
-    --sidebar-bg: #f7fafc;
+#deadlines-widget, #alarms-widget {
+    background: linear-gradient(145deg, var(--glass-bg), var(--danger-glow));
+    border-color: rgba(239, 68, 68, 0.1);
+}
+
+#exercises-widget {
+    background: linear-gradient(145deg, var(--glass-bg), var(--warning-glow));
+    border-color: rgba(245, 158, 11, 0.1);
+}
+
+/* Elevated Hover Effects for a more interactive feel */
+.glass-widget {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-widget:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -160,11 +174,7 @@ body {
 
 .glass-input:focus {
     border-color: var(--accent);
-}
-
-[data-theme="light"] .glass-input {
-    background: #ffffff;
-    color: var(--text-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .w-full {

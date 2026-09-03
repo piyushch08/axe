@@ -83,9 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 1, name: 'Data Structures Exam', date: 'Tomorrow', urgent: true, completed: false },
             { id: 2, name: 'Python Project', date: 'In 3 days', urgent: false, completed: false }
         ]),
-        // Customization State
-        customColor: Storage.get('customColor', null),
-        customBg: Storage.get('customBg', null),
         hiddenWidgets: Storage.get('hiddenWidgets', []),
         mood: Storage.get('mood', null),
         scratchpadText: Storage.get('scratchpadText', ''),
@@ -127,9 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         Storage.set('deadlines', STATE.deadlines);
         Storage.set('alarms', STATE.alarms);
         
-        Storage.set('customColor', STATE.customColor);
-        Storage.set('customBg', STATE.customBg);
-        Storage.set('activeWidgets', STATE.activeWidgets);
         Storage.set('hiddenWidgets', STATE.hiddenWidgets);
         Storage.set('mood', STATE.mood);
         Storage.set('scratchpadText', STATE.scratchpadText);
@@ -147,6 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Apply Personalization ---
     function applyPersonalization() {
+        // Apply single theme classes if necessary (we use standard CSS now)
+
         if (STATE.customColor) {
             document.documentElement.style.setProperty('--accent', STATE.customColor);
             document.documentElement.style.setProperty('--accent-glow', STATE.customColor + '66');
