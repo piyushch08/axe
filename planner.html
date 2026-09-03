@@ -262,18 +262,42 @@
                     </header>
                     <div class="diet-grid">
                         <div class="glass-widget macros">
-                            <h3>Daily Goals</h3>
-                            <div class="macro-bar">
-                                <span id="calories-text">Calories (0/2200)</span>
-                                <div class="progress-track"><div class="progress-fill" id="calories-fill" style="width: 0%"></div></div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h3>Daily Goals</h3>
+                                <button class="glass-btn icon-only small-btn" id="edit-diet-goals-btn" title="Edit Goals"><i class="ri-edit-line"></i></button>
                             </div>
-                            <div class="macro-bar">
-                                <span id="protein-text">Protein (0g/150g)</span>
-                                <div class="progress-track"><div class="progress-fill" id="protein-fill" style="width: 0%"></div></div>
+                            <div id="diet-goals-display">
+                                <div class="macro-bar">
+                                    <span id="calories-text">Calories (0/2200)</span>
+                                    <div class="progress-track"><div class="progress-fill" id="calories-fill" style="width: 0%"></div></div>
+                                </div>
+                                <div class="macro-bar">
+                                    <span id="protein-text">Protein (0g/150g)</span>
+                                    <div class="progress-track"><div class="progress-fill" id="protein-fill" style="width: 0%"></div></div>
+                                </div>
+                                <div class="macro-bar">
+                                    <span id="carbs-text">Carbs (0g/200g)</span>
+                                    <div class="progress-track"><div class="progress-fill" id="carbs-fill" style="width: 0%"></div></div>
+                                </div>
                             </div>
-                            <div class="macro-bar">
-                                <span id="carbs-text">Carbs (0g/200g)</span>
-                                <div class="progress-track"><div class="progress-fill" id="carbs-fill" style="width: 0%"></div></div>
+                            <div id="diet-goals-edit" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px;">
+                                <div>
+                                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Calories</label>
+                                    <input type="number" id="inline-cal-goal" class="glass-input" style="margin: 0;" min="1">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Protein (g)</label>
+                                    <input type="number" id="inline-pro-goal" class="glass-input" style="margin: 0;" min="1">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Carbs (g)</label>
+                                    <input type="number" id="inline-carb-goal" class="glass-input" style="margin: 0;" min="1">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Water (ml)</label>
+                                    <input type="number" id="inline-water-goal" class="glass-input" style="margin: 0;" min="1">
+                                </div>
+                                <button class="glass-btn primary small-btn" id="save-diet-goals-btn">Save</button>
                             </div>
                         </div>
                         <div class="glass-widget water-tracker">
@@ -283,7 +307,10 @@
                             </div>
                             <div class="water-controls">
                                 <p id="water-text">0 / 2000 ml</p>
-                                <button class="glass-btn mt-4" id="add-water-btn"><i class="ri-add-line"></i> 250ml</button>
+                                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                    <input type="number" id="water-amount-input" class="glass-input" value="250" style="margin: 0; flex: 1;" min="1">
+                                    <button class="glass-btn primary" id="add-water-btn" style="flex: 1;"><i class="ri-add-line"></i> Add</button>
+                                </div>
                             </div>
                         </div>
                         <div class="glass-widget meals">

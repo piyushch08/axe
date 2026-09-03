@@ -967,6 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 6. Diet Plan Interactivity ---
     const addWaterBtn = document.getElementById('add-water-btn');
+    const waterAmountInput = document.getElementById('water-amount-input');
     const waterLevelFill = document.getElementById('water-level-fill');
     const waterText = document.getElementById('water-text');
 
@@ -1020,10 +1021,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (addWaterBtn) {
         addWaterBtn.addEventListener('click', () => {
-            STATE.waterIntake += 250;
+            let amount = 250;
+            if (waterAmountInput) {
+                amount = parseInt(waterAmountInput.value, 10) || 0;
+            }
+            if (amount > 0) {
+                STATE.waterIntake += amount;
+                saveState();
+                renderDiet();
+                showToast(`Logged ${amount}ml of water`);
+            }
+        });
+    }
+
+    // Inline Diet Goals Editing
+    const editDietGoalsBtn = document.getElementById('edit-diet-goals-btn');
+    const saveDietGoalsBtn = document.getElementById('save-diet-goals-btn');
+    const dietGoalsDisplay = document.getElementById('diet-goals-display');
+    const dietGoalsEdit = document.getElementById('diet-goals-edit');
+    
+    if (editDietGoalsBtn && saveDietGoalsBtn && dietGoalsDisplay && dietGoalsEdit) {
+        editDietGoalsBtn.addEventListener('click', () => {
+            dietGoalsDisplay.style.display = 'none';
+            dietGoalsEdit.style.display = 'flex';
+            
+            document.getElementById('inline-cal-goal').value = STATE.calGoal;
+            document.getElementById('inline-pro-goal').value = STATE.proGoal;
+            document.getElementById('inline-carb-goal').value = STATE.carbGoal;
+            document.getElementById('inline-water-goal').value = STATE.waterGoal;
+        });
+
+        saveDietGoalsBtn.addEventListener('click', () => {
+            STATE.calGoal = parseInt(document.getElementById('inline-cal-goal').value, 10) || 2200;
+            STATE.proGoal = parseInt(document.getElementById('inline-pro-goal').value, 10) || 150;
+            STATE.carbGoal = parseInt(document.getElementById('inline-carb-goal').value, 10) || 200;
+            STATE.waterGoal = parseInt(document.getElementById('inline-water-goal').value, 10) || 2000;
+            
             saveState();
+            applyPersonalization();
             renderDiet();
-            showToast("Logged 250ml of water");
+            
+            dietGoalsEdit.style.display = 'none';
+            dietGoalsDisplay.style.display = 'block';
+            showToast("Goals updated!");
         });
     }
 
