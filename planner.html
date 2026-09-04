@@ -10,6 +10,47 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="planner.css">
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+      // Replace these with your actual Firebase config
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+      };
+
+      try {
+          const app = initializeApp(firebaseConfig);
+          window.fbAuth = getAuth(app);
+          window.fbDb = getFirestore(app);
+          // Enable offline support
+          enableIndexedDbPersistence(window.fbDb).catch((err) => {
+              console.warn("Firebase persistence error:", err.code);
+          });
+          window.firebaseInitialized = true;
+      } catch (e) {
+          console.warn("Firebase not initialized. Using local storage fallback. Please add your config.", e);
+          window.firebaseInitialized = false;
+      }
+      
+      // Make them globally available for planner.js
+      window.fbSignIn = signInWithEmailAndPassword;
+      window.fbSignUp = createUserWithEmailAndPassword;
+      window.fbSignOut = signOut;
+      window.fbOnAuth = onAuthStateChanged;
+      window.fbDoc = doc;
+      window.fbSetDoc = setDoc;
+      window.fbGetDoc = getDoc;
+      window.fbOnSnapshot = onSnapshot;
+    </script>
 </head>
 <body>
     <div class="dynamic-bg" id="dynamic-bg">
@@ -159,6 +200,14 @@
                         <div class="glass-widget scratchpad-widget" id="scratchpad-widget">
                             <h3><i class="ri-sticky-note-line"></i> Quick Notes</h3>
                             <textarea id="scratchpad-text" class="glass-input" placeholder="Jot down quick thoughts here... (Auto-saves)" style="height: 120px; resize: vertical; margin-top: 10px;"></textarea>
+                        </div>
+
+                        <!-- Progress Coach (Insights) -->
+                        <div class="glass-widget insights-widget" id="insights-widget" style="grid-column: 1 / -1;">
+                            <h3><i class="ri-lightbulb-flash-line"></i> Progress Coach</h3>
+                            <div id="insights-content" style="margin-top: 10px; font-size: 0.95rem; color: var(--text-primary); background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px; border-left: 4px solid var(--accent);">
+                                Analyzing your progress...
+                            </div>
                         </div>
 
                         <!-- Global Alarms Widget -->
@@ -510,6 +559,9 @@
                         <input type="checkbox" data-widget="alarms-widget" checked> Global Alarms
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" data-widget="insights-widget" checked> Progress Coach
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                         <input type="checkbox" data-widget="deadlines-widget" checked> Upcoming Deadlines
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -569,6 +621,27 @@
             </header>
             <h3 id="alarm-trigger-title" style="margin-bottom: 1.5rem; font-size: 1.5rem;">Alarm!</h3>
             <button class="glass-btn primary w-full" id="dismiss-alarm-btn" style="padding: 1rem; font-size: 1.2rem;">Dismiss</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-overlay" style="display: none; z-index: 3000;">
+        <div class="glass-widget modal-content" style="max-width: 400px; text-align: center;">
+            <header class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 id="auth-title"><i class="ri-user-line"></i> Login</h2>
+                <button class="glass-btn icon-only" id="close-auth-btn" style="display: none;"><i class="ri-close-line"></i></button>
+            </header>
+            <p id="auth-error" style="color: #fe4f70; font-size: 0.9rem; margin-bottom: 10px; display: none;"></p>
+            <div id="auth-form" style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="email" id="auth-email" class="glass-input" placeholder="Email" required>
+                <input type="password" id="auth-password" class="glass-input" placeholder="Password" required>
+                <button class="glass-btn primary w-full" id="auth-submit-btn">Login</button>
+                <button class="glass-btn w-full" id="auth-toggle-btn">Need an account? Sign up</button>
+            </div>
+            <div id="auth-user-info" style="display: none; flex-direction: column; gap: 10px;">
+                <p>Logged in as <span id="auth-user-email" style="color: var(--accent); font-weight: 500;"></span></p>
+                <button class="glass-btn w-full" id="auth-logout-btn" style="color: #fe4f70; border-color: #fe4f70;">Logout</button>
+            </div>
         </div>
     </div>
 
