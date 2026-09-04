@@ -1891,31 +1891,31 @@ document.addEventListener('DOMContentLoaded', () => {
         // Exercise Insight
         const streakDays = STATE.streak.filter(s => s).length;
         if(streakDays === 0) {
-            insights.push('🏋️‍♀️ You haven\\'t exercised this week. A quick 10-minute session today can break the ice!');
+            insights.push("🏋️‍♀️ You haven't exercised this week. A quick 10-minute session today can break the ice!");
         } else if (streakDays >= 5) {
-            insights.push('🔥 Awesome exercise streak! Make sure to schedule a rest day for recovery.');
+            insights.push("🔥 Awesome exercise streak! Make sure to schedule a rest day for recovery.");
         } else {
-            insights.push(`💪 You\\'re on a ${streakDays}-day streak! Keep the momentum going.`);
+            insights.push(`💪 You're on a ${streakDays}-day streak! Keep the momentum going.`);
         }
         
         // Diet Insight
         const totalCals = STATE.meals.reduce((sum, m) => sum + (m.cals || 0), 0);
         if(totalCals < STATE.calGoal * 0.5 && new Date().getHours() > 15) {
-            insights.push('🍽️ It\\'s past 3 PM and you\\'re under 50% of your calorie goal. Time for a substantial snack or meal.');
+            insights.push("🍽️ It's past 3 PM and you're under 50% of your calorie goal. Time for a substantial snack or meal.");
         }
         
         const totalPro = STATE.meals.reduce((sum, m) => sum + (m.pro || 0), 0);
         if(totalPro > 0 && totalPro < STATE.proGoal * 0.8 && new Date().getHours() > 18) {
-            insights.push('🍗 You\\'re a bit low on protein today. Consider a high-protein dinner or shake.');
+            insights.push("🍗 You're a bit low on protein today. Consider a high-protein dinner or shake.");
         }
         
         // Study Insight
         if(STATE.studyMins < STATE.defaultFocusTime) {
-            insights.push('📚 You haven\\'t hit your minimum study focus time yet. Let\\'s do one Pomodoro session!');
+            insights.push("📚 You haven't hit your minimum study focus time yet. Let's do one Pomodoro session!");
         }
         
         if(insights.length === 0) {
-            insights.push('🌟 You\\'re doing great! Keep up the balanced routine.');
+            insights.push("🌟 You're doing great! Keep up the balanced routine.");
         }
         
         // Shuffle and slice
