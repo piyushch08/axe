@@ -762,6 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const todayDateKey = `${actualToday.getFullYear()}-${String(actualToday.getMonth()+1).padStart(2,'0')}-${String(actualToday.getDate()).padStart(2,'0')}`;
 
         if (isMonthView) {
+            calGrid.classList.remove('week-view');
             calMonthYear.textContent = `${monthNames[month]} ${year}`;
             
             const firstDay = new Date(year, month, 1).getDay();
@@ -784,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for(let i=1; i<=daysInMonth; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cal-cell';
-                cell.textContent = i;
+                cell.innerHTML = `<span class="cal-date">${i}</span>`;
                 
                 const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                 
@@ -827,6 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 calMonthYear.textContent = `${startMonth} - ${endMonth} ${weekStart.getFullYear()}`;
             }
+            calGrid.classList.add('week-view');
 
             const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             daysOfWeek.forEach(day => {
@@ -846,8 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const cell = document.createElement('div');
                 cell.className = 'cal-cell';
-                cell.style.height = '120px'; // Taller for week view
-                cell.textContent = rDate;
+                cell.innerHTML = `<span class="cal-date">${rDate}</span>`;
                 
                 const dateKey = `${rYear}-${String(rMonth+1).padStart(2,'0')}-${String(rDate).padStart(2,'0')}`;
                 
@@ -964,7 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 viewBtns.forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
-                isMonthView = e.target.textContent === 'Month';
+                isMonthView = e.target.textContent.trim() === 'Month';
                 renderCalendar();
             });
         });
