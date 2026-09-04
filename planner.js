@@ -1763,54 +1763,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isSignup = false;
 
-    if (window.firebaseInitialized && window.fbOnAuth) {
-        window.fbOnAuth(window.fbAuth, (user) => {
-            if (user) {
-                currentUser = user;
-                if(authModal) authModal.style.display = 'none';
-                
-                const profileIcon = document.getElementById('profile-icon');
-                if(profileIcon) profileIcon.style.color = 'var(--accent)';
-                
-                window.fbGetDoc(window.fbDoc(window.fbDb, "users", user.uid)).then(docSnap => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        Object.keys(data).forEach(key => {
-                            if(STATE.hasOwnProperty(key)) {
-                                STATE[key] = data[key];
-                                localStorage.setItem(key, JSON.stringify(data[key]));
-                            }
-                        });
-                        // Re-render UI
-                        updateDashboardRings();
-                        renderTrendChart();
-                        renderStudyTopics();
-                        renderStudyLogs();
-                        renderDeadlines();
-                        renderCalendar();
-                        renderDiet();
-                        renderMeals();
-                        renderExercises();
-                        renderStreak();
-                        renderTodos();
-                        renderAlarms();
-                        generateInsights();
-                    }
-                }).catch(err => console.error("Error fetching user data:", err));
-            } else {
-                currentUser = null;
-                if(authModal) {
-                    authModal.style.display = 'flex';
-                    authForm.style.display = 'flex';
-                    authUserInfo.style.display = 'none';
-                    authTitle.innerHTML = '<i class="ri-user-line"></i> Login';
-                    isSignup = false;
-                    authToggleBtn.textContent = 'Need an account? Sign up';
+    function initFirebase() {
+        if (window.firebaseInitialized && window.fbOnAuth) {
+            window.fbOnAuth(window.fbAuth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    if(authModal) authModal.style.display = 'none';
+                    
+                    const profileIcon = document.getElementById('profile-icon');
+                    if(profileIcon) profileIcon.style.color = 'var(--accent)';
+                    
+                    window.fbGetDoc(window.fbDoc(window.fbDb, "users", user.uid)).then(docSnap => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            Object.keys(data).forEach(key => {
+                                if(STATE.hasOwnProperty(key)) {
+                                    STATE[key] = data[key];
+                                    localStorage.setItem(key, JSON.stringify(data[key]));
+                                }
+                            });
+                            // Re-render UI
+                            updateDashboardRings();
+                            renderTrendChart();
+                            renderStudyTopics();
+                            renderStudyLogs();
+                            renderDeadlines();
+                            renderCalendar();
+                            renderDiet();
+                            renderMeals();
+                            renderExercises();
+                            renderStreak();
+                            renderTodos();
+                            renderAlarms();
+                            generateInsights();
+                        }
+                    }).catch(err => console.error("Error fetching user data:", err));
+                } else {
+                    currentUser = null;
+                    const profileIcon = document.getElementById('profile-icon');
+                    if(profileIcon) profileIcon.style.color = 'inherit';
                 }
-                const profileIcon = document.getElementById('profile-icon');
-                if(profileIcon) profileIcon.style.color = 'inherit';
-            }
-        });
+            });
+        }
+    }
+
+    if (window.firebaseInitialized !== undefined) {
+        initFirebase();
+    } else {
+        window.addEventListener('firebaseLoaded', initFirebase);
     }
 
     if(authToggleBtn) {
@@ -1856,10 +1856,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    const profileWidget = document.getElementById('editable-profile');
-    if(profileWidget) {
-        profileWidget.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); 
+    const profileIconTrigger = document.getElementById('profile-icon');
+    if(profileIconTrigger) {
+        profileIconTrigger.addEventListener('click', (e) => {
             if(currentUser && authModal) {
                 authModal.style.display = 'flex';
                 authForm.style.display = 'none';
@@ -1868,9 +1867,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(closeAuthBtn) closeAuthBtn.style.display = 'block';
             } else if (authModal) {
                 authModal.style.display = 'flex';
+                authForm.style.display = 'flex';
+                authUserInfo.style.display = 'none';
+                authTitle.innerHTML = '<i class="ri-user-line"></i> Login';
+                isSignup = false;
+                authToggleBtn.textContent = 'Need an account? Sign up';
                 if(closeAuthBtn) closeAuthBtn.style.display = 'block';
             }
         });
+        profileIconTrigger.style.cursor = 'pointer';
     }
     if(closeAuthBtn) {
         closeAuthBtn.addEventListener('click', () => authModal.style.display = 'none');

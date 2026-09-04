@@ -50,6 +50,8 @@
       window.fbSetDoc = setDoc;
       window.fbGetDoc = getDoc;
       window.fbOnSnapshot = onSnapshot;
+      
+      window.dispatchEvent(new CustomEvent('firebaseLoaded'));
     </script>
 </head>
 <body>
