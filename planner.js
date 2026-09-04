@@ -56,12 +56,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- State Management & Persistence ---
+    let currentUser = null;
+    let syncTimeout = null;
+
     const Storage = {
         get: (key, defaultVal) => {
             try { const data = localStorage.getItem(key); return data ? JSON.parse(data) : defaultVal; } catch(e) { return defaultVal; }
         },
         set: (key, val) => {
             localStorage.setItem(key, JSON.stringify(val));
+            if (currentUser && window.firebaseInitialized) {
+                clearTimeout(syncTimeout);
+                syncTimeout = setTimeout(() => {
+                    if (window.fbSetDoc && window.fbDoc && window.fbDb) {
+                        window.fbSetDoc(window.fbDoc(window.fbDb, "users", currentUser.uid), STATE, { merge: true })
+                            .catch(err => console.error("Firebase sync error:", err));
+                    }
+                }, 2000);
+            }
         }
     };
 
@@ -1735,4 +1747,180 @@ document.addEventListener('DOMContentLoaded', () => {
     
     renderAlarms();
 
+    // --- Auth & Backend Integration ---
+    const authModal = document.getElementById('auth-modal');
+    const closeAuthBtn = document.getElementById('close-auth-btn');
+    const authEmail = document.getElementById('auth-email');
+    const authPassword = document.getElementById('auth-password');
+    const authSubmitBtn = document.getElementById('auth-submit-btn');
+    const authToggleBtn = document.getElementById('auth-toggle-btn');
+    const authError = document.getElementById('auth-error');
+    const authUserInfo = document.getElementById('auth-user-info');
+    const authUserEmail = document.getElementById('auth-user-email');
+    const authLogoutBtn = document.getElementById('auth-logout-btn');
+    const authForm = document.getElementById('auth-form');
+    const authTitle = document.getElementById('auth-title');
+
+    let isSignup = false;
+
+    if (window.firebaseInitialized && window.fbOnAuth) {
+        window.fbOnAuth(window.fbAuth, (user) => {
+            if (user) {
+                currentUser = user;
+                if(authModal) authModal.style.display = 'none';
+                
+                const profileIcon = document.getElementById('profile-icon');
+                if(profileIcon) profileIcon.style.color = 'var(--accent)';
+                
+                window.fbGetDoc(window.fbDoc(window.fbDb, "users", user.uid)).then(docSnap => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        Object.keys(data).forEach(key => {
+                            if(STATE.hasOwnProperty(key)) {
+                                STATE[key] = data[key];
+                                localStorage.setItem(key, JSON.stringify(data[key]));
+                            }
+                        });
+                        // Re-render UI
+                        updateDashboardRings();
+                        renderTrendChart();
+                        renderStudyTopics();
+                        renderStudyLogs();
+                        renderDeadlines();
+                        renderCalendar();
+                        renderDiet();
+                        renderMeals();
+                        renderExercises();
+                        renderStreak();
+                        renderTodos();
+                        renderAlarms();
+                        generateInsights();
+                    }
+                }).catch(err => console.error("Error fetching user data:", err));
+            } else {
+                currentUser = null;
+                if(authModal) {
+                    authModal.style.display = 'flex';
+                    authForm.style.display = 'flex';
+                    authUserInfo.style.display = 'none';
+                    authTitle.innerHTML = '<i class="ri-user-line"></i> Login';
+                    isSignup = false;
+                    authToggleBtn.textContent = 'Need an account? Sign up';
+                }
+                const profileIcon = document.getElementById('profile-icon');
+                if(profileIcon) profileIcon.style.color = 'inherit';
+            }
+        });
+    }
+
+    if(authToggleBtn) {
+        authToggleBtn.addEventListener('click', () => {
+            isSignup = !isSignup;
+            if(isSignup) {
+                authTitle.innerHTML = '<i class="ri-user-add-line"></i> Sign Up';
+                authSubmitBtn.textContent = 'Sign Up';
+                authToggleBtn.textContent = 'Already have an account? Login';
+            } else {
+                authTitle.innerHTML = '<i class="ri-user-line"></i> Login';
+                authSubmitBtn.textContent = 'Login';
+                authToggleBtn.textContent = 'Need an account? Sign up';
+            }
+            authError.style.display = 'none';
+        });
+    }
+
+    if(authSubmitBtn) {
+        authSubmitBtn.addEventListener('click', () => {
+            const email = authEmail.value;
+            const password = authPassword.value;
+            if(!email || !password) return;
+            
+            authError.style.display = 'none';
+            authSubmitBtn.textContent = 'Processing...';
+            
+            const authPromise = isSignup 
+                ? window.fbSignUp(window.fbAuth, email, password)
+                : window.fbSignIn(window.fbAuth, email, password);
+                
+            authPromise.catch(err => {
+                authError.textContent = err.message;
+                authError.style.display = 'block';
+                authSubmitBtn.textContent = isSignup ? 'Sign Up' : 'Login';
+            });
+        });
+    }
+    
+    if(authLogoutBtn) {
+        authLogoutBtn.addEventListener('click', () => {
+            window.fbSignOut(window.fbAuth);
+        });
+    }
+    
+    const profileWidget = document.getElementById('editable-profile');
+    if(profileWidget) {
+        profileWidget.addEventListener('contextmenu', (e) => {
+            e.preventDefault(); 
+            if(currentUser && authModal) {
+                authModal.style.display = 'flex';
+                authForm.style.display = 'none';
+                authUserInfo.style.display = 'flex';
+                authUserEmail.textContent = currentUser.email;
+                if(closeAuthBtn) closeAuthBtn.style.display = 'block';
+            } else if (authModal) {
+                authModal.style.display = 'flex';
+                if(closeAuthBtn) closeAuthBtn.style.display = 'block';
+            }
+        });
+    }
+    if(closeAuthBtn) {
+        closeAuthBtn.addEventListener('click', () => authModal.style.display = 'none');
+    }
+
+    // --- Progress Insights Engine ---
+    function generateInsights() {
+        const insightsContent = document.getElementById('insights-content');
+        if(!insightsContent) return;
+        
+        let insights = [];
+        
+        // Exercise Insight
+        const streakDays = STATE.streak.filter(s => s).length;
+        if(streakDays === 0) {
+            insights.push('🏋️‍♀️ You haven\\'t exercised this week. A quick 10-minute session today can break the ice!');
+        } else if (streakDays >= 5) {
+            insights.push('🔥 Awesome exercise streak! Make sure to schedule a rest day for recovery.');
+        } else {
+            insights.push(`💪 You\\'re on a ${streakDays}-day streak! Keep the momentum going.`);
+        }
+        
+        // Diet Insight
+        const totalCals = STATE.meals.reduce((sum, m) => sum + (m.cals || 0), 0);
+        if(totalCals < STATE.calGoal * 0.5 && new Date().getHours() > 15) {
+            insights.push('🍽️ It\\'s past 3 PM and you\\'re under 50% of your calorie goal. Time for a substantial snack or meal.');
+        }
+        
+        const totalPro = STATE.meals.reduce((sum, m) => sum + (m.pro || 0), 0);
+        if(totalPro > 0 && totalPro < STATE.proGoal * 0.8 && new Date().getHours() > 18) {
+            insights.push('🍗 You\\'re a bit low on protein today. Consider a high-protein dinner or shake.');
+        }
+        
+        // Study Insight
+        if(STATE.studyMins < STATE.defaultFocusTime) {
+            insights.push('📚 You haven\\'t hit your minimum study focus time yet. Let\\'s do one Pomodoro session!');
+        }
+        
+        if(insights.length === 0) {
+            insights.push('🌟 You\\'re doing great! Keep up the balanced routine.');
+        }
+        
+        // Shuffle and slice
+        insights = insights.sort(() => 0.5 - Math.random()).slice(0, 2);
+        
+        insightsContent.innerHTML = insights.map(i => `<div style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px;"><i class="ri-arrow-right-s-line" style="color: var(--accent);"></i> <span>${i}</span></div>`).join('');
+    }
+    
+    // Initial call
+    generateInsights();
+
+    // End of DOMContentLoaded
 });
